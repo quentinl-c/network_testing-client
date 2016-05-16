@@ -1,19 +1,28 @@
 import threading
 from selenium import webdriver
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-URL = "http://152.81.9.28:8080/peer/doc/zerezkfeza"
-# URL = "https://docs.google.com/document/d/18zd6xh4uKT8NTaPoRndhONkJmT2Mo6-SLl1kYOp3G24/edit?usp=sharing"
-CHROMEDIRVER = "./chromedriver"
-result_writer = "default.txt"
+
+# Selenium
+REMOTE_DRIVER = 'http://127.0.0.1:4444/wd/hub'
+SELECTOR = 'ace_text-input'
 
 
 class Collaborator(threading.Thread):
     """docstring for Collaborator"""
-    def __init__(self, result_writer=result_writer, url=URL,
-                 webdriver=webdriver.Chrome(CHROMEDIRVER)):
+    def __init__(self, client_id, rg, url):
         threading.Thread.__init__(self)
-        self.result_writer = result_writer
-        self.url = url
-        self.driver = webdriver
-        self.driver.get(self.url)
+        self._driver = webdriver.Remote(
+                command_executor=REMOTE_DRIVER,
+                desired_capabilities=DesiredCapabilities.CHROME)
+        self.__result_file = open(client_id + '_' + rg, 'w')
+        self._driver.get(url)
+        while self.select is None:
+            try:
+                self.select = self.driver.find_element_by_class_name(
+                    SELECTOR)
+            except Exception:
+                continue
+
+    def saveMeasures(self, measure):
+        self.__result_file.write(measure)

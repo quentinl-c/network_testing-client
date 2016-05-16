@@ -1,8 +1,13 @@
 from collaborator import Collaborator
 from selenium import webdriver
 import time
+import threading
 
-CHROMEDIRVER = "./chromedriver"
+
+# Job
+def writeInDocument(select, word):
+    select.send_keys(word)
+    time.wait(1)
 
 
 class Writer(Collaborator):
@@ -21,4 +26,6 @@ class Writer(Collaborator):
                 continue
 
     def run(self):
-        pass
+        t = threading.Thread(target=writeInDocument(self.select, self.word))
+        with True:
+

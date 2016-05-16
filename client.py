@@ -19,11 +19,34 @@ class Client(object):
         self.__connection = pika.BlockingConnection(
             pika.ConnectionParameters(HOST, PORT))
         self.__channel = self.__connection.channel()
+        self.__isReady = False
+        self.__collaborators = []
 
     def register(self):
         msg = json.dumps({'id': str(self.__id)})
         response = requests.post(URL + '/registration', data=msg)
         try:
             content = json.loads(response.content)
-        except Exception, e:
-            raise e
+            self.__setConfiguration(content)
+            self.__appLyingConfiguration()
+
+            if isReady:
+                response = requests.post(URL + '/acknowledgement', data=msg)
+
+        except Exception:
+            print("HTTP response cannot be read")
+
+    def __setConfiguration(self, content):
+        self.exp_name = content['exp_name']
+        self.nodes_nbr = content['nodes_nbr']
+        self.typing_speed = content['typing_speed']
+        self.duration = content['duration']
+        self.browser_by_node = content['browser_by_node']
+        self.target = content['target']
+
+    def __appLyingConfiguration(self):
+        for i in xrange(1, self.browser_by_node):
+            collab = CollabFactory.instanciateCollaborator("writer", self.__id,
+                                                           i, self.target)
+            self.__collaborators.append(collab)
+        self.__isReady = True
