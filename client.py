@@ -50,3 +50,15 @@ class Client(object):
                                                            i, self.target)
             self.__collaborators.append(collab)
         self.__isReady = True
+
+    def __startExperimentation(self):
+        for c in self.__collaborators:
+            c.start()
+        time.sleep(self.duration)
+        for c in self.__collaborators:
+            c.stop()
+
+
+if __name__ == '__main__':
+    client = Client()
+    client.register()
