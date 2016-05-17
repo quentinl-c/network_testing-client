@@ -11,7 +11,7 @@ class Writer(Collaborator):
         Collaborator.__init__(self, client_id, rk, url)
         self.typing_speed = typing_speed
         self.__can_typing = False
-        self.__word_to_type = self.__gen_word_to_type()
+        self.__word_to_type = "toto"
 
     def __writeInDocument(self):
         while self.__can_typing:
@@ -39,7 +39,7 @@ class Writer(Collaborator):
 
         old_content_len = 0
         with self.__can_typing:
-            content = select.text
+            content = self.select.text
             time_stamp = time.time()
             if len(content) != old_content_len:
                 old_content_len = len(content)

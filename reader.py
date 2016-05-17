@@ -8,6 +8,10 @@ class Reader(Collaborator):
         Collaborator.__init__(self, client_id, rk, url)
         self.__can_reading = False
 
+    def stop(self):
+        self.__can_reading = False
+        self._driver.close()
+
     def run(self):
         old_content_len = 0
 
