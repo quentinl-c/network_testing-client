@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from collab_factory import CollabFactory
 import requests
+import time
 import pika
 import uuid
 import json
@@ -38,11 +39,11 @@ class Client(object):
         msg = {'id': str(self.__id)}
         response = requests.post(URL + '/registration', data=msg)
         content = json.loads(response.text)
+        print(content)
         if content['status'] == 'OK':
-            self.__setConfiguration(content['body'])
+            self.__setConfiguration(content['body']['config'])
             self.__appLyingConfiguration()
             if self.__isReady:
-                print("TAGADA")
                 response = requests.post(URL + '/acknowledgement', data=msg)
                 self.__channel.start_consuming()
         else:
@@ -57,33 +58,34 @@ class Client(object):
         self.target = content['target']
         print("fin de l'initialisation")
 
-    def __appLyingConfiguration(self):
+    def __appLyingConfiguration(self, role):
         for i in range(0, self.browser_by_node):
-            collab = CollabFactory.instanciateCollaborator("writer", self.__id,
+            collab = CollabFactory.instanciateCollaborator(role, self.__id,
                                                            i, self.target,
                                                            self.typing_speed)
             self.__collaborators.append(collab)
         self.__isReady = True
-        print("fin de l'application de la configuration")
 
     def __callback(self, channel, method, properties, body):
         content = json.loads(body.decode("UTF-8"))
         if(str(content['recipient']) == self.__id or
            str(content['recipient']) == "all"):
             if str(content['body']) == "start":
-                self.__startExperimentation
+
+                self.__startExperimentation()
 
     def __startExperimentation(self):
         for c in self.__collaborators:
             c.start()
 
-        time.sleep(self.duration)
+        time.sleep(self.duration)  # Waite the end of the experimentation
 
         for c in self.__collaborators:
             c.stop()
+            c.join()
+        self.__channel.close()
 
 
 if __name__ == '__main__':
-    print("TEST")
     client = Client()
     client.register()
