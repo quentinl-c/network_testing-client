@@ -10,9 +10,8 @@ SELECTOR = 'ace_text-input'
 
 class Writer(Collaborator):
     """docstring for Writer"""
-    def __init__(self, client_id, rk, url, typing_speed):
-        Collaborator.__init__(self, client_id, rk, url, SELECTOR, 'w')
-        self.typing_speed = typing_speed
+    def __init__(self, url, typing_speed):
+        Collaborator.__init__(self, url, SELECTOR, typing_speed)
         self.__word_to_type = "abcd|"
 
     def run(self):
@@ -20,5 +19,5 @@ class Writer(Collaborator):
         while self.alive:
             time_stamp = time.time()
             self.select.send_keys(self.__word_to_type)
-            self.saveMeasurement(time_stamp, self.__word_to_type)
+            self.saveMeasurement('w', time_stamp, self.__word_to_type)
             time.sleep(1)

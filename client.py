@@ -33,7 +33,7 @@ class Client(object):
                                      queue=queue_name,
                                      no_ack=True)
         self.__isReady = False
-        self.__collaborators = []
+        self.__collab = None
 
     def register(self):
         msg = {'id': str(self.__id)}
@@ -42,28 +42,26 @@ class Client(object):
         print(content)
         if content['status'] == 'OK':
             self.__setConfiguration(content['body']['config'])
-            self.__appLyingConfiguration()
+            self.__appLyingConfiguration(content['body']['role'])
             if self.__isReady:
                 response = requests.post(URL + '/acknowledgement', data=msg)
                 self.__channel.start_consuming()
         else:
-            print("HTTP ERROR")
+            print("=== Registration failed ===")
 
     def __setConfiguration(self, content):
         self.exp_name = content['exp_name']
-        self.nodes_nbr = content['nodes_nbr']
+        self.writers = content['writers']
+        self.readers = content['readers']
         self.typing_speed = content['typing_speed']
         self.duration = content['duration']
-        self.browser_by_node = content['browser_by_node']
         self.target = content['target']
-        print("fin de l'initialisation")
 
     def __appLyingConfiguration(self, role):
-        for i in range(0, self.browser_by_node):
-            collab = CollabFactory.instanciateCollaborator(role, self.__id,
-                                                           i, self.target,
-                                                           self.typing_speed)
-            self.__collaborators.append(collab)
+        self.__collab = CollabFactory.instanciateCollaborator(role,
+                                                              self.target,
+                                                              self.typing_speed
+                                                              )
         self.__isReady = True
 
     def __callback(self, channel, method, properties, body):
@@ -74,15 +72,22 @@ class Client(object):
 
                 self.__startExperimentation()
 
+    def __sendResults(self):
+        msg = {'id': str(self.__id), 'payload': self.__collab.returnResults()}
+        response = requests.post(URL + '/saveresults', data=msg)
+        content = json.loads(response.text)
+        if content['status'] != 'OK':
+            print("=== Results are not saved ===")
+
     def __startExperimentation(self):
-        for c in self.__collaborators:
-            c.start()
+        self.__collab.start()
 
         time.sleep(self.duration)  # Waite the end of the experimentation
 
-        for c in self.__collaborators:
-            c.stop()
-            c.join()
+        self.__sendResults()
+        self.__collab.stop()
+        self.__collab.join()
+
         self.__channel.close()
 
 

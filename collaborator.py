@@ -10,31 +10,28 @@ REMOTE_DRIVER = 'http://127.0.0.1:4444/wd/hub'
 
 class Collaborator(threading.Thread):
     """docstring for Collaborator"""
-    def __init__(self, client_id, rk, url, selector, role):
+    def __init__(self, url, selector, typing_speed):
         threading.Thread.__init__(self)
-        self._client_id = client_id
-        self._rk = rk
-        self._driver = webdriver.Remote(
+        self.__driver = webdriver.Remote(
                 command_executor=REMOTE_DRIVER,
                 desired_capabilities=DesiredCapabilities.CHROME)
-        self.__results = Logger(role)
+        self.__results = Logger()
         self.alive = False
+        self.typing_speed = typing_speed
         self.__driver.get(url)
 
         self.select = None
         while self.select is None:
-            self._driver.implicitly_wait(20)
-            self.select = self._driver.find_element_by_class_name(
+            self.__driver.implicitly_wait(20)
+            self.select = self.__driver.find_element_by_class_name(
                 selector)
 
     def stop(self):
         self.alive = False
         self.__driver.close()
 
-    def saveMeasurement(self, *args):
-        self.__results.bufferize(' '.join(str(elt) for elt in args))
+    def saveMeasurement(self, role, *args):
+        self.__results.bufferize(role, ' '.join(str(elt) for elt in args))
 
-    def saveResults(self):
-        # TODO : Send file to the server
-        self.__result_file.saveBuffer()
-        self.__result_file.saveFile()
+    def returnResults(self):
+        return self.__results.genResult()
