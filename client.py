@@ -8,12 +8,12 @@ import json
 
 # RabbitMQ Server
 # HOST = '40.117.234.24'
-HOST = '127.0.0.1'
+HOST = '152.81.12.192'
 PORT = 5672
 EXCHANGE = 'broker'
 
 # Server
-URL = 'http://localhost:5000'
+URL = 'http://152.81.9.28:5000'
 
 
 class Client(object):
