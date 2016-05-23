@@ -12,9 +12,8 @@ class Collaborator(threading.Thread):
     """docstring for Collaborator"""
     def __init__(self, url, selector, typing_speed):
         threading.Thread.__init__(self)
-        self.__driver = webdriver.Remote(
-                command_executor=REMOTE_DRIVER,
-                desired_capabilities=DesiredCapabilities.CHROME)
+        self.__driver = webdriver.Remote(REMOTE_DRIVER,
+                                         DesiredCapabilities.CHROME)
         self.__results = Logger()
         self.alive = False
         self.typing_speed = typing_speed
