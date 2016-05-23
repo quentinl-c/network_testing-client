@@ -13,7 +13,7 @@ PORT = 5672
 EXCHANGE = 'broker'
 
 # Server
-URL = 'http://152.81.9.28:5000'
+URL = 'http://152.81.12.192:5000'
 
 
 class Client(object):
