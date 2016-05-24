@@ -5,6 +5,7 @@ import time
 import pika
 import uuid
 import json
+import sys
 
 # RabbitMQ Server
 # HOST = '40.117.234.24'
@@ -12,18 +13,16 @@ HOST = '152.81.12.192'
 PORT = 5672
 EXCHANGE = 'broker'
 
-# Server
-URL = 'http://152.81.12.192:5000'
-
 
 class Client(object):
     """docstring for Client"""
-    def __init__(self):
+    def __init__(self, server_address):
         self.__id = uuid.uuid4()
         self.__connection = pika.BlockingConnection(
             pika.ConnectionParameters(HOST, PORT))
         self.__channel = self.__connection.channel()
         self.__channel.exchange_declare(exchange=EXCHANGE, type="fanout")
+        self.__server_address = server_address
 
         result = self.__channel.queue_declare(exclusive=True)
         queue_name = result.method.queue
@@ -37,14 +36,15 @@ class Client(object):
 
     def register(self):
         msg = {'id': str(self.__id)}
-        response = requests.post(URL + '/registration', data=msg)
+        url = self.__server_address + '/registration'
+        response = requests.post(url, data=msg)
         content = json.loads(response.text)
-        print(content)
         if content['status'] == 'OK':
             self.__setConfiguration(content['body']['config'])
             self.__appLyingConfiguration(content['body']['role'])
             if self.__isReady:
-                response = requests.post(URL + '/acknowledgement', data=msg)
+                url = self.__server_address + '/acknowledgement'
+                response = requests.post(url, data=msg)
                 self.__channel.start_consuming()
         else:
             print("=== Registration failed ===")
@@ -74,7 +74,8 @@ class Client(object):
 
     def __sendResults(self):
         msg = {'id': str(self.__id), 'payload': self.__collab.returnResults()}
-        response = requests.post(URL + '/saveresults', data=msg)
+        url = self.__server_address + '/saveresults'
+        response = requests.post(url, data=msg)
         content = json.loads(response.text)
         if content['status'] != 'OK':
             print("=== Results are not saved ===")
@@ -92,5 +93,9 @@ class Client(object):
 
 
 if __name__ == '__main__':
-    client = Client()
+    if len(sys.argv) < 2:
+        sys.exit('Usage: %s SERVER_IP:SERVER_PORT' % sys.argv[0])
+
+    server_adress = sys.argv[1]
+    client = Client(server_address)
     client.register()
