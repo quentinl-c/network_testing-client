@@ -96,6 +96,6 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         sys.exit('Usage: %s SERVER_IP:SERVER_PORT' % sys.argv[0])
 
-    server_adress = sys.argv[1]
+    server_address = sys.argv[1]
     client = Client(server_address)
     client.register()
