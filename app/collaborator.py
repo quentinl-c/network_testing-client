@@ -1,19 +1,27 @@
 import threading
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from pyvirtualdisplay import Display
 from logger import Logger
 
 
 # Selenium
-REMOTE_DRIVER = 'http://127.0.0.1:4444/wd/hub'
+CHROME_LOCATION = "/usr/bin/google-chrome"
 
 
 class Collaborator(threading.Thread):
     """docstring for Collaborator"""
     def __init__(self, url, selector, typing_speed):
         threading.Thread.__init__(self)
-        self.__driver = webdriver.Remote(REMOTE_DRIVER,
-                                         DesiredCapabilities.CHROME)
+        self.__display = Display(visible=0, size=(800, 600))
+        self.__display.start()
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.binary_location = CHROME_LOCATION
+        self.__driver = webdriver.Chrome("/opt/selenium/chromedriver",
+                                         chrome_options=chrome_options,
+                                         service_args=["--verbose",
+                                                       "--log-path=/home/log"])
         self.__results = Logger()
         self.alive = False
         self.typing_speed = typing_speed
@@ -28,6 +36,7 @@ class Collaborator(threading.Thread):
     def stop(self):
         self.alive = False
         self.__driver.close()
+        self.__display.quit()
 
     def saveMeasurement(self, role, *args):
         self.__results.bufferize(role, ' '.join(str(elt) for elt in args))

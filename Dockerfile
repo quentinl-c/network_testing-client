@@ -1,6 +1,6 @@
-FROM ubuntu-lxc
+FROM quentinlc/ubuntu-xenial-lxc
 
-MAINTAINER Quentin Laporte-Chabasse (for the updates)
+MAINTAINER Quentin Laporte-Chabasse
 
 RUN apt-get -y update && apt-get install -y \
     unzip \
@@ -14,44 +14,41 @@ RUN apt-get -y update && apt-get install -y \
     xfonts-cyrillic \
     python3-pip
 
-# Install Chrome
-RUN curl https://dl-ssl.google.com/linux/linux_signing_key.pub -o /tmp/google.pub
-RUN cat /tmp/google.pub | apt-key add -; rm /tmp/google.pub
-RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google.list
-RUN mkdir -p /usr/share/desktop-directories
-RUN apt-get -y update && apt-get install -y google-chrome-stable
-
-# Disable the SUID sandbox so that chrome can launch without being in a privileged container
-RUN dpkg-divert --add --rename --divert /opt/google/chrome/google-chrome.real /opt/google/chrome/google-chrome
-RUN echo "#!/bin/bash\nexec /opt/google/chrome/google-chrome.real --disable-setuid-sandbox \"\$@\"" > /opt/google/chrome/google-chrome
-RUN chmod 755 /opt/google/chrome/google-chrome
-
-# Install selenium
-RUN mkdir -p /opt/selenium
-RUN curl http://selenium-release.storage.googleapis.com/2.48/selenium-server-standalone-2.48.2.jar -o /opt/selenium/selenium-server-standalone.jar
-
-# Install Chrome Driver
-RUN curl http://chromedriver.storage.googleapis.com/2.20/chromedriver_linux64.zip -o /opt/selenium/chromedriver_linux64.zip
-RUN cd /opt/selenium; unzip /opt/selenium/chromedriver_linux64.zip; rm -rf chromedriver_linux64.zip;
-
 # Python dependencies
-RUN pip3 install pika
-RUN pip3 install selenium
-RUN pip3 install requests
+COPY requirements.txt /home/
+RUN pip3 install -r /home/requirements.txt
 
-ENV DISPLAY :20
+# Importation of script allowing us to install chrome and chromedriver
+COPY chrome-install.sh /home/
+RUN chmod 0755 /home/chrome-install.sh
+
+# Importation of DNS configuration in home folder
+COPY resolv.conf /home/
+
+
+# Copy Launch script
+COPY entrypoint /home/entrypoint
+RUN chmod 0755 /home/entrypoint
+
+# Copy client sources
+RUN mkdir -p /home/client
+COPY app/ /home/client
 
 # Default server address
 ENV SERVER_ADDRESS '127.0.0.1'
 ENV RABBITMQ_ADDRESS '127.0.0.1'
 
 
-COPY entrypoint.sh /opt/selenium/entrypoint.sh
+# Importation of useful files in order to daemonize application
+COPY client /etc/init.d/
+RUN chmod 0755 /etc/init.d/client
+RUN rm /lib/init/init-d-script
+# Daemons must work in background
+COPY init-d-script /lib/init/
 
-# Pull repository
-RUN mkdir -p /home/client
-
-COPY app/ /home/client
+# Install all dependencies
+# Uncomment the following line if you don't deploy over Grid5k
+# RUN /home/chrome-install.sh
 
 EXPOSE 4444
-CMD ["sh", "/opt/selenium/entrypoint.sh"]
+CMD ["sh", "/home/entrypoint"]

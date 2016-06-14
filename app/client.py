@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from collab_factory import CollabFactory
+from writer import Writer
 import requests
 import time
 import pika
@@ -9,6 +10,9 @@ import os
 
 # RabbitMQ Server
 PORT = 5672
+EXCHANGE = 'broker'
+SERVER_PORT = 5000
+HEADER = 'http://'
 
 
 class Client(object):
@@ -33,14 +37,14 @@ class Client(object):
 
     def register(self):
         msg = {'id': str(self.__id)}
-        url = self.__server_address + '/registration'
+        url = HEADER + self.__server_address + ':' + str(SERVER_PORT) + '/registration'
         response = requests.post(url, data=msg)
         content = json.loads(response.text)
         if content['status'] == 'OK':
             self.__setConfiguration(content['body']['config'])
-            self.__appLyingConfiguration(content['body']['role'])
+            self.__appLyingConfiguration(content['body'])
             if self.__isReady:
-                url = self.__server_address + '/acknowledgement'
+                url = HEADER + self.__server_address + ':' + str(SERVER_PORT) + '/acknowledgement'
                 response = requests.post(url, data=msg)
                 self.__channel.start_consuming()
         else:
@@ -53,11 +57,13 @@ class Client(object):
         self.duration = content['duration']
         self.target = content['target']
 
-    def __appLyingConfiguration(self, role):
-        self.__collab = CollabFactory.instanciateCollaborator(role,
+    def __appLyingConfiguration(self, body):
+        self.__collab = CollabFactory.instanciateCollaborator(body['role'],
                                                               self.target,
                                                               self.typing_speed
                                                               )
+        if isinstance(self.__collab, Writer):
+            self.__collab.__word_to_type = body[word]
         self.__isReady = True
 
     def __callback(self, channel, method, properties, body):
@@ -70,7 +76,7 @@ class Client(object):
 
     def __sendResults(self):
         msg = {'id': str(self.__id), 'payload': self.__collab.returnResults()}
-        url = self.__server_address + '/saveresults'
+        url = HEADER + self.__server_address + ':' + str(SERVER_PORT) + '/saveresults'
         response = requests.post(url, data=msg)
         content = json.loads(response.text)
         if content['status'] != 'OK':
@@ -90,7 +96,7 @@ class Client(object):
 
 if __name__ == '__main__':
 
-    server_address = os.getenv('SYSTEM_ADDRESS', '127.0.0.1')
+    server_address = os.getenv('SERVER_ADDRESS', '127.0.0.1')
     rabbitmq_address = os.getenv('RABBITMQ_ADDRESS', '127.0.0.1')
     client = Client(server_address, rabbitmq_address)
     client.register()
