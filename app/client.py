@@ -37,14 +37,16 @@ class Client(object):
 
     def register(self):
         msg = {'id': str(self.__id)}
-        url = HEADER + self.__server_address + ':' + str(SERVER_PORT) + '/registration'
+        url = ''.join(HEADER, self.__server_address, ':', str(SERVER_PORT),
+                      '/registration')
         response = requests.post(url, data=msg)
         content = json.loads(response.text)
         if content['status'] == 'OK':
             self.__setConfiguration(content['body']['config'])
             self.__appLyingConfiguration(content['body'])
             if self.__isReady:
-                url = HEADER + self.__server_address + ':' + str(SERVER_PORT) + '/acknowledgement'
+                url = ''.join(HEADER, self.__server_address, ':',
+                              str(SERVER_PORT), '/acknowledgement')
                 response = requests.post(url, data=msg)
                 self.__channel.start_consuming()
         else:
@@ -76,7 +78,8 @@ class Client(object):
 
     def __sendResults(self):
         msg = {'id': str(self.__id), 'payload': self.__collab.returnResults()}
-        url = HEADER + self.__server_address + ':' + str(SERVER_PORT) + '/saveresults'
+        url = ''.join(HEADER, self.__server_address, ':', str(SERVER_PORT),
+                      '/saveresults')
         response = requests.post(url, data=msg)
         content = json.loads(response.text)
         if content['status'] != 'OK':
