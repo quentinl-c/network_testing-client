@@ -36,7 +36,7 @@ This part explains how to test client image deployed in virtual node over Grid50
 
 Physical nodes reservation :
 ```bash
-# Reserve two nodes (you can reserve as many as you want)
+# Reserve two nodes (you can reserve as many as you want but at least two)
 oarsub -t deploy -l slash_22=1+nodes=2 -I
 # Install Jessie distribution on nodes
 kadeploy3 -f $OAR_NODE_FILE -e jessie-x64-nfs -k
@@ -56,9 +56,12 @@ distem --start-vnode node-1
 # Connection to the vnode
 ssh vnode_ip
 # On the vnode
+# Specify the gateway
+ifconfig if0 vnode_ip netmask 255.252.0.0
+route add default gw 10.147.255.254 dev if0 # Be careful, 10.147.255.254 is the gateway of Nancy site, you must change it if you are on another site
 # Add the right DNS configuration
 rm /etc/resolv.conf
-cp /home/resolv.conf /home/
+cp /home/resolv.conf /etc/
 # Add localhost into hosts file
 echo "127.0.0.1 localhost" >> /etc/hosts
 # Afterward, you can run your test script ...
