@@ -61,7 +61,6 @@ class Reader(Collab):
                 self.content_editor += content
                 old_content_len = last_index
                 print("=== Reader is reading something : %s ===" % content)
-            time.sleep(1)
 
         def stop(self):
             Collab.stop(self)
