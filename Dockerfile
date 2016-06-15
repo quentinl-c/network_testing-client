@@ -34,6 +34,10 @@ RUN chmod 0755 /home/entrypoint
 RUN mkdir -p /home/client
 COPY app/ /home/client
 
+# Copy tests
+RUN mkdir -p /home/tests
+COPY tests/ /home/tests
+
 # Default server address
 ENV SERVER_ADDRESS '127.0.0.1'
 ENV RABBITMQ_ADDRESS '127.0.0.1'

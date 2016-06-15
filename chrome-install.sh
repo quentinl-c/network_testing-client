@@ -6,5 +6,6 @@ mkdir -p /usr/share/desktop-directories && \
 apt-get -y update && apt-get install -y google-chrome-stable && \
 
 # Install Chrome Driver
+mkdir -p /opt/selenium && \
 curl http://chromedriver.storage.googleapis.com/2.20/chromedriver_linux64.zip -o /opt/selenium/chromedriver_linux64.zip && \
 cd /opt/selenium; unzip /opt/selenium/chromedriver_linux64.zip; rm -rf chromedriver_linux64.zip;
