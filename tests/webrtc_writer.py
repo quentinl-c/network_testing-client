@@ -2,20 +2,17 @@
 
 """
 import threading
-import random
-import string
 import time
+import sys
 from selenium import webdriver
 from pyvirtualdisplay import Display
 
-URL = "http://mute-collabedition.rhcloud.com/peer/doc/"
-DOCID = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
 CHROME_LOCATION = "/usr/bin/google-chrome"
 
 
 class Collab(threading.Thread):
     """docstring forCollab"""
-    def __init__(self, selector):
+    def __init__(self, selector, url):
         threading.Thread.__init__(self)
         self.__display = Display(visible=0, size=(800, 600))
         self.__display.start()
@@ -26,7 +23,7 @@ class Collab(threading.Thread):
                                          chrome_options=chrome_options,
                                          service_args=["--verbose",
                                                        "--log-path=/home/log"])
-        self.__driver.get(URL + DOCID)
+        self.__driver.get(url)
         self.content_editor = ""
         self.alive = False
         self.select = None
@@ -43,8 +40,8 @@ class Collab(threading.Thread):
 
 class Writer(Collab):
     """docstring for Writer"""
-    def __init__(self):
-        Collab.__init__(self, 'ace_text-input')
+    def __init__(self, url):
+        Collab.__init__(self, 'ace_text-input', url)
         self.__word_to_type = "type_something"
 
     def run(self):
@@ -60,46 +57,17 @@ class Writer(Collab):
         Collab.stop(self)
         print("=== Writer is stopping ===")
 
-
-class Reader(Collab):
-    """docstring for Reader"""
-    def __init__(self):
-        Collab.__init__(self, 'ace_content')
-
-    def run(self):
-        print("=== Reader is starting ===")
-        old_content_len = 0
-        self.alive = True
-        while self.alive:
-            content = self.select.text.replace('\n', '').replace('\r', '')
-            new_content_len = len(content)
-            diff = new_content_len - old_content_len
-
-            if diff > 0:
-                last_index = new_content_len
-                content = content[old_content_len:last_index]
-                self.content_editor += content
-                old_content_len = last_index
-                print("=== Reader is reading something : %s ===" % content)
-            time.sleep(1)
-
-        def stop(self):
-            Collab.stop(self)
-            print("=== Reader is stopping ===")
-
 if __name__ == '__main__':
     duration = 60
-    delay = 15
+    print("=== Uptime : %s ===" % duration)
 
-    print("=== Duration : %s ===" % duration)
-    print("=== Delay : %s ===" % delay)
+    if len(sys.argv) < 2:
+        sys.exit(1)
 
-    reader = Reader()
-    writer = Writer()
+    url = sys.argv[1]
+    print("=== URL : %s ===" % url)
 
-    print("=== Experimentation is starting ===")
-    reader.start()
-    time.sleep(5)
+    writer = Writer(url)
     writer.start()
 
     time.sleep(duration)
@@ -108,15 +76,6 @@ if __name__ == '__main__':
     writer.stop()
     writer.join()
 
-    time.sleep(delay)
-
-    reader_content = reader.content_editor
-    reader.stop()
-    reader.join()
-
-    # print(writer_content)
-    # print(reader_content)
-    # print(len(writer_content))
-    # print(len(reader_content))
-    assert (writer_content == reader_content), "reader and writer content don't match"
-    print("=== Test succesfully ended ===")
+    print("=== Content read ===")
+    print(writer_content)
+    print("=== Len : %s ===" % len(writer_content))
