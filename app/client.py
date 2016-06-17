@@ -37,26 +37,29 @@ class Client(object):
 
     def register(self):
         msg = {'id': str(self.__id)}
-        url = ''.join(HEADER, self.__server_address, ':', str(SERVER_PORT),
-                      '/registration')
+        seq_url = (HEADER, self.__server_address, ':', str(SERVER_PORT),
+                   '/registration')
+        url = ''.join(seq_url)
         response = requests.post(url, data=msg)
+        print(response)
         content = json.loads(response.text)
         if content['status'] == 'OK':
             self.__setConfiguration(content['body']['config'])
             self.__appLyingConfiguration(content['body'])
             if self.__isReady:
-                url = ''.join(HEADER, self.__server_address, ':',
-                              str(SERVER_PORT), '/acknowledgement')
+                seq_url = (HEADER, self.__server_address, ':',
+                           str(SERVER_PORT), '/acknowledgement')
+                url = ''.join(seq_url)
                 response = requests.post(url, data=msg)
                 self.__channel.start_consuming()
         else:
             print("=== Registration failed ===")
 
     def __setConfiguration(self, content):
-        self.writers = content['writers']
-        self.readers = content['readers']
-        self.typing_speed = content['typing_speed']
-        self.duration = content['duration']
+        self.writers = int(content['writers'])
+        self.readers = int(content['readers'])
+        self.typing_speed = int(content['typing_speed'])
+        self.duration = int(content['duration'])
         self.target = content['target']
 
     def __appLyingConfiguration(self, body):
@@ -65,7 +68,7 @@ class Client(object):
                                                               self.typing_speed
                                                               )
         if isinstance(self.__collab, Writer):
-            self.__collab.__word_to_type = body[word]
+            self.__collab.__word_to_type = body['word']
         self.__isReady = True
 
     def __callback(self, channel, method, properties, body):
@@ -78,8 +81,9 @@ class Client(object):
 
     def __sendResults(self):
         msg = {'id': str(self.__id), 'payload': self.__collab.returnResults()}
-        url = ''.join(HEADER, self.__server_address, ':', str(SERVER_PORT),
-                      '/saveresults')
+        seq_url = (HEADER, self.__server_address, ':', str(SERVER_PORT),
+                   '/saveresults')
+        url = ''.join(seq_url)
         response = requests.post(url, data=msg)
         content = json.loads(response.text)
         if content['status'] != 'OK':

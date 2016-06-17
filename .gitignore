@@ -64,3 +64,4 @@ target/
 #Other
 *.tar*
 .DS_Store
+chromedriver

@@ -6,6 +6,7 @@ from logger import Logger
 
 # Selenium
 CHROME_LOCATION = "/usr/bin/google-chrome"
+CHROMEDRIVER_LOCATION = "/opt/selenium/chromedriver"
 
 
 class Collaborator(threading.Thread):
@@ -17,7 +18,7 @@ class Collaborator(threading.Thread):
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--no-sandbox")
         chrome_options.binary_location = CHROME_LOCATION
-        self.__driver = webdriver.Chrome("/opt/selenium/chromedriver",
+        self.__driver = webdriver.Chrome(CHROMEDRIVER_LOCATION,
                                          chrome_options=chrome_options,
                                          service_args=["--verbose",
                                                        "--log-path=/home/log"])
