@@ -3,4 +3,4 @@
 # Launch experimentation
 export DISPLAY=:20 && \
 Xvfb :20 -screen 0 1366x768x16 -ac & \
-/home/client/client.py
+/home/client/setup.py > /var/log/client.log 2> /var/log/client.err
