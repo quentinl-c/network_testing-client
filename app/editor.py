@@ -1,4 +1,5 @@
 from collaborator import Collaborator
+import random
 import logging
 import time
 
@@ -8,6 +9,7 @@ logger = logging.getLogger(__name__)
 WRITER_SELECTOR = 'ace_text-input'
 READER_SELECTOR = 'ace_content'
 FILTER = '[Tracker]'
+tempo = 5  # Client will wait 20 secondes befores getting results
 
 
 class Editor(Collaborator):
@@ -31,16 +33,25 @@ class Editor(Collaborator):
 
     def run(self):
         self.alive = True
+
         if self.word_to_type is not None:
-            while self.alive:
+            beg_time = random.uniform(1.0, 5.0)
+            time.sleep(beg_time)
+
+        while self.alive:
+            if self.word_to_type is not None:
                 time_stamp = time.time()
                 self.select.send_keys(self.word_to_type)
-                time.sleep(1)
+                time.sleep(2)
             else:
                 content = self.select.text
+        print(self.select.text)
 
     def getResults(self):
+        logger.debug("=== Get results from log files ===")
         tmp = []
+        self.alive = False
+        time.sleep(tempo)
         with open(self._log_path, 'r') as content_file:
             for line in content_file:
                 beg = line.find(FILTER)

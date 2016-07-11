@@ -62,6 +62,7 @@ class Collaborator(threading.Thread):
 
     def getResults(self):
         # Default behavior
+        logger.debug("=== Get results from log files ===")
         content = ''
         with open(self._log_path, 'r') as content_file:
             content = content_file.read()
