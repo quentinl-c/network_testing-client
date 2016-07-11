@@ -12,7 +12,11 @@ RUN apt-get -y update && apt-get install -y \
     xfonts-75dpi \
     xfonts-scalable \
     xfonts-cyrillic \
-    python3-pip
+    python3-pip \
+    ntp
+
+
+RUN pip3 install --upgrade pip
 
 # Python dependencies
 COPY requirements.txt /home/
@@ -21,6 +25,15 @@ RUN pip3 install -r /home/requirements.txt
 # Importation of script allowing us to install chrome and chromedriver
 COPY chrome-install.sh /home/
 RUN chmod 0755 /home/chrome-install.sh
+
+# Install all dependencies
+RUN /home/chrome-install.sh
+
+# Add custom rc.local file in order to launch ntp deamon
+COPY rc.local /etc/
+RUN chmod 755 /etc/rc.local
+
+
 
 # Importation of DNS configuration in home folder
 COPY resolv.conf /home/
@@ -50,9 +63,6 @@ RUN rm /lib/init/init-d-script
 # Daemons must work in background
 COPY init-d-script /lib/init/
 
-# Install all dependencies
-# Uncomment the following line if you don't deploy over Grid5k
-# RUN /home/chrome-install.sh
 
 EXPOSE 4444
 CMD ["sh", "/home/entrypoint"]
