@@ -42,6 +42,11 @@ COPY scripts/resolv.conf /home/
 COPY scripts/entrypoint /home/entrypoint
 RUN chmod 0755 /home/entrypoint
 
+# Copy Sync Clock script
+COPY scripts/sync_clock.sh /home/sync_clock.sh
+RUN chmod 0755 /home/sync_clock.sh
+
+
 # Copy client sources
 RUN mkdir -p /home/client
 COPY app/ /home/client

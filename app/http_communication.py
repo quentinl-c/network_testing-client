@@ -5,7 +5,7 @@ import requests
 SERVER_PORT = 5000
 HEADER = 'http://'
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename=__name__ + '.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +47,12 @@ class HTTPCommunication(object):
 
         try:
             response = requests.post(url, data=msg)
-            content = json.loads(response.text)
+            try:
+                content = json.loads(response.text)
+            except ValueError:
+                logger.exception(
+                    "=== Response is not well formed : %s ===" %
+                    content)
 
             if content['status'] is not None:
                 if content['status'] == 'OK':
@@ -70,7 +75,12 @@ class HTTPCommunication(object):
 
         try:
             response = requests.post(url, data=msg)
-            content = json.loads(response.text)
+            try:
+                content = json.loads(response.text)
+            except ValueError:
+                logger.exception(
+                    "=== Response is not well formed : %s ===" %
+                    content)
 
             if content['status'] is not None:
                 if content['status'] == 'OK':

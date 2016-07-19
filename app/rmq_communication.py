@@ -6,7 +6,7 @@ PORT = 5672
 EXCHANGE = 'broker'
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename=__name__ + '.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

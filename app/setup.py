@@ -2,7 +2,7 @@
 from controller import Controller
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename=__name__ + '.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

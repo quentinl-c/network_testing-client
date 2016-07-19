@@ -3,13 +3,13 @@ import random
 import logging
 import time
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename=__name__ + '.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 WRITER_SELECTOR = 'ace_text-input'
 READER_SELECTOR = 'ace_content'
 FILTER = '[Tracker]'
-tempo = 5  # Client will wait 20 secondes befores getting results
+tempo = 15  # Client will wait 20 secondes befores getting results
 
 
 class Editor(Collaborator):
@@ -35,7 +35,7 @@ class Editor(Collaborator):
         self.alive = True
 
         if self.word_to_type is not None:
-            beg_time = random.uniform(1.0, 5.0)
+            beg_time = random.uniform(2.0, 6.0)
             time.sleep(beg_time)
 
         while self.alive:

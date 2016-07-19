@@ -5,7 +5,8 @@ import threading
 import logging
 import os
 
-logging.basicConfig(level=logging.DEBUG)
+
+logging.basicConfig(filename=__name__ + '.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 IS_LOCAL_CONFIG = bool(os.getenv('IS_LOCAL_CONFIG', False))
