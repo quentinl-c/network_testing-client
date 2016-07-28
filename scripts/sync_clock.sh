@@ -1,3 +1,3 @@
 sudo service ntp stop &&
-sudo ntpdate -s time.nist.gov &&
+sudo ntpd -gq &&
 sudo service ntp start

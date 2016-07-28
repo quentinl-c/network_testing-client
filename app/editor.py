@@ -1,10 +1,13 @@
 from collaborator import Collaborator
+import os
 import random
 import logging
 import time
 
 logging.basicConfig(filename=__name__ + '.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+HOME_DIR = os.getenv('HOME_DIR', '/home/')
 
 WRITER_SELECTOR = 'ace_text-input'
 READER_SELECTOR = 'ace_content'
@@ -18,18 +21,20 @@ class Editor(Collaborator):
         Collaborator.__init__(self, controller, target)
         logger.debug("===  Editor is being instanciated ===")
         self.word_to_type = None
+        self.counter = 0
 
         if len(word_to_type) > 0:
-            selctor = WRITER_SELECTOR
+            selector = WRITER_SELECTOR
+            self.word_to_type = word_to_type
         else:
-            selctor = READER_SELECTOR
+            selector = READER_SELECTOR
+            self.word_to_type = None
 
-        self.word_to_type = word_to_type
         self.select = None
         while self.select is None:
             self._driver.implicitly_wait(20)
             self.select = self._driver.find_element_by_class_name(
-                WRITER_SELECTOR)
+                selector)
 
     def run(self):
         self.alive = True
@@ -41,13 +46,17 @@ class Editor(Collaborator):
         while self.alive:
             if self.word_to_type is not None:
                 time_stamp = time.time()
-                self.select.send_keys(self.word_to_type)
+                w = ''.join((self.word_to_type, ';',
+                             str(self.counter).zfill(6)))
+                self.select.send_keys(w)
+                self.counter += 1
                 time.sleep(2)
             else:
                 content = self.select.text
-        print(self.select.text)
+        self.saveTxt()
 
     def getResults(self):
+        time.sleep(tempo)
         logger.debug("=== Get results from log files ===")
         tmp = []
         self.alive = False
@@ -60,3 +69,16 @@ class Editor(Collaborator):
                     tmp.append(rec)
         content = '\n'.join(tmp)
         self._controller.sendResults(content)
+
+    def saveTxt(self):
+        if self.word_to_type is not None:
+            self.select = None
+            while self.select is None:
+                self._driver.implicitly_wait(20)
+                self.select = self._driver.find_element_by_class_name(
+                    READER_SELECTOR)
+
+        content = self.select.text
+        file = open(HOME_DIR + str(self._controller.id) + '_content.txt', 'w')
+        file.write(content)
+        file.close()
