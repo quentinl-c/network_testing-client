@@ -1,5 +1,4 @@
 from collaborator import Collaborator
-from selenium.webdriver.common.action_chains import ActionChains
 import os
 import random
 import logging
@@ -23,7 +22,6 @@ class Editor(Collaborator):
         logger.debug("===  Editor is being instanciated ===")
         self.word_to_type = None
         self.counter = 0
-
         if len(word_to_type) > 0:
             self.word_to_type = word_to_type
 
@@ -46,7 +44,6 @@ class Editor(Collaborator):
 
         while self.alive:
             if self.word_to_type is not None:
-                time_stamp = time.time()
                 w = ''.join((self.word_to_type, ';',
                              str(self.counter).zfill(6)))
                 self.text_area[0].send_keys(w)
@@ -54,7 +51,7 @@ class Editor(Collaborator):
                 self.counter += 1
                 time.sleep(2)
             else:
-                content = self.text_area[0].text
+                self.text_area[0].text
 
     def getResults(self):
         time.sleep(tempo)
