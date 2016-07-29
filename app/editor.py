@@ -45,14 +45,13 @@ class Editor(Collaborator):
 
         while self.alive:
             if self.word_to_type is not None:
-                time_stamp = time.time()
                 w = ''.join((self.word_to_type, ';',
                              str(self.counter).zfill(6)))
                 self.select.send_keys(w)
                 self.counter += 1
                 time.sleep(2)
             else:
-                content = self.select.text
+                self.select.text
         self.saveTxt()
 
     def getResults(self):
