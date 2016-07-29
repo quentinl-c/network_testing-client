@@ -1,4 +1,5 @@
 from collaborator import Collaborator
+from selenium.webdriver.common.action_chains import ActionChains
 import os
 import random
 import logging
@@ -9,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 HOME_DIR = os.getenv('HOME_DIR', '/home/')
 
-WRITER_SELECTOR = 'ace_text-input'
-READER_SELECTOR = 'ace_content'
+TEXT_AREA = 'textarea'
+BUTTON = 'button'
 FILTER = '[Tracker]'
 tempo = 15  # Client will wait 20 secondes befores getting results
 
@@ -24,21 +25,21 @@ class Editor(Collaborator):
         self.counter = 0
 
         if len(word_to_type) > 0:
-            selector = WRITER_SELECTOR
             self.word_to_type = word_to_type
-        else:
-            selector = READER_SELECTOR
-            self.word_to_type = None
 
-        self.select = None
-        while self.select is None:
+        self.text_area = None
+        while self.text_area is None:
             self._driver.implicitly_wait(20)
-            self.select = self._driver.find_element_by_class_name(
-                selector)
+            self.text_area = self._driver.find_elements_by_id(TEXT_AREA)
+            print(self.text_area)
+        self.button = None
+        while self.button is None:
+            self._driver.implicitly_wait(20)
+            self.button = self._driver.find_elements_by_id(BUTTON)
+        print(self.button)
 
     def run(self):
         self.alive = True
-
         if self.word_to_type is not None:
             beg_time = random.uniform(2.0, 6.0)
             time.sleep(beg_time)
@@ -48,12 +49,12 @@ class Editor(Collaborator):
                 time_stamp = time.time()
                 w = ''.join((self.word_to_type, ';',
                              str(self.counter).zfill(6)))
-                self.select.send_keys(w)
+                self.text_area[0].send_keys(w)
+                self.button[0].click()
                 self.counter += 1
                 time.sleep(2)
             else:
-                content = self.select.text
-        self.saveTxt()
+                content = self.text_area[0].text
 
     def getResults(self):
         time.sleep(tempo)
@@ -69,16 +70,3 @@ class Editor(Collaborator):
                     tmp.append(rec)
         content = '\n'.join(tmp)
         self._controller.sendResults(content)
-
-    def saveTxt(self):
-        if self.word_to_type is not None:
-            self.select = None
-            while self.select is None:
-                self._driver.implicitly_wait(20)
-                self.select = self._driver.find_element_by_class_name(
-                    READER_SELECTOR)
-
-        content = self.select.text
-        file = open(HOME_DIR + str(self._controller.id) + '_content.txt', 'w')
-        file.write(content)
-        file.close()
